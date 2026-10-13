@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<meta name="theme-color" content="#060d26"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Plin"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="icon" href="icon-192.png"/>
+<title>Plin</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#060d26;
+    --bgGradient:linear-gradient(180deg, #0d1c4f 0%, #040919 100%);
+    --card:rgba(60, 95, 210, 0.14);
+    --cardBorder:rgba(255, 255, 255, 0.08);
+    --accent:#7aa2ff;
+    --accentGradient:linear-gradient(135deg, #3352c4 0%, #1c2c78 100%);
+    --red:#ff4655;
+    --flame:#ffa24a;
+    --pos:#3ddc97;
+    --neg:#ff5c5c;
+    --white:#ffffff;
+    --w80:rgba(255,255,255,0.8);
+    --w50:rgba(255,255,255,0.5);
+  }
+  html,body{min-height:100%;background:var(--bg);background:var(--bgGradient);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--white);-webkit-tap-highlight-color:transparent;}
+  .app{max-width:540px;margin:0 auto;background:rgba(3, 8, 24, 0.4);min-height:100vh;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,0.6);border-left:1px solid var(--cardBorder);border-right:1px solid var(--cardBorder);}
+  .header{padding:20px 20px 14px;padding-top:max(20px, env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:center;background:rgba(8, 18, 52, 0.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--cardBorder);}
+  .header-left-wrap{display:flex;align-items:center;gap:12px;}
+  .app-logo{width:38px;height:38px;flex-shrink:0;border-radius:9px;}
+  .header-date{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--accent);text-transform:uppercase;margin-bottom:2px;}
+  .header h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;}
+  .auth-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--white);padding:8px 16px;border-radius:24px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .tabs{background:rgba(8, 18, 52, 0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--cardBorder);display:flex;position:sticky;top:0;z-index:10;}
+  .tab-btn{flex:1;padding:14px 2px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:700;color:var(--w50);border-bottom:3px solid transparent;transition:all 0.2s ease;}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(122, 162, 255, 0.07);}
+  .content{flex:1;padding:16px;padding-bottom:max(24px, env(safe-area-inset-bottom));}
+  .tab-panel{display:none;animation:fadeIn 0.25s ease;}.tab-panel.active{display:block;}
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:translateY(0);} }
+  .card{background:var(--card);border:1px solid var(--cardBorder);border-radius:22px;padding:18px;margin-bottom:16px;}
+  .card-title{font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:8px;}
+  .hero{background:var(--accentGradient);border-radius:24px;padding:22px 20px;margin-bottom:16px;box-shadow:0 12px 40px rgba(51, 82, 196, 0.3);position:relative;overflow:hidden;}
+  .hero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--red);}
+  .hero-top{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .hero-label{font-size:11px;letter-spacing:1.5px;color:rgba(255,255,255,0.8);text-transform:uppercase;font-weight:700;}
+  .hero-amount{font-size:40px;font-weight:900;letter-spacing:-1.5px;margin:6px 0 4px;line-height:1.05;font-variant-numeric:tabular-nums;}
+  .hero-sub{font-size:14px;color:rgba(255,255,255,0.9);font-weight:500;}
+  .year-sel{display:flex;align-items:center;gap:6px;}
+  .year-sel button{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.15);color:#fff;font-size:16px;font-weight:800;cursor:pointer;}
+  .year-sel span{font-size:17px;font-weight:800;min-width:46px;text-align:center;font-variant-numeric:tabular-nums;}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+  .stat-card{background:rgba(255,255,255,0.03);border:1px solid var(--cardBorder);border-radius:18px;padding:14px;}
+  .stat-label{font-size:11px;color:var(--w50);font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px;}
+  .stat-value{font-size:18px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
+  .stat-sub{font-size:12px;color:var(--w50);margin-top:4px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .m-head,.m-row{display:grid;grid-template-columns:34px minmax(0,1fr) minmax(0,1fr) 84px;gap:6px;align-items:center;}
+  .m-head{font-size:10px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--w50);padding:2px 0 6px;}
+  .m-head span:nth-child(2),.m-head span:nth-child(3){padding-left:4px;}
+  .m-head span:last-child{text-align:right;}
+  .m-row{padding:7px 0 3px;}
+  .m-wrap{border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:5px;border-radius:12px;}
+  .m-wrap:last-child{border-bottom:none;}
+  .m-wrap.sel{background:rgba(122,162,255,0.08);}
+  .m-num{font-size:15px;font-weight:800;color:var(--w50);text-align:center;font-variant-numeric:tabular-nums;line-height:1.1;}
+  .m-short{display:block;font-size:9px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;margin-top:2px;}
+  .m-wrap.has .m-num{color:var(--flame);}
+  .m-amt{text-align:right;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;background:none;border:none;color:var(--white);cursor:pointer;padding:8px 2px;width:100%;}
+  .m-amt.mute{color:var(--w50);cursor:default;}
+  .m-info{font-size:11px;color:var(--w50);font-weight:600;padding-left:40px;font-variant-numeric:tabular-nums;min-height:14px;}
+  .m-info .err{color:var(--neg);}
+  .m-info .k{color:var(--flame);}
+  .pos{color:var(--pos);} .neg{color:var(--neg);} .mute{color:var(--w50);}
+  .field{width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.15);font-size:16px;font-weight:700;text-align:right;outline:none;background:rgba(0,0,0,0.25);color:var(--white);color-scheme:dark;font-variant-numeric:tabular-nums;}
+  .field:focus{border-color:var(--accent);}
+  .field::placeholder{color:rgba(255,255,255,0.35);font-weight:600;}
+  .field.left{text-align:left;font-weight:600;}
+  .field.sm{font-size:14px;padding:9px 8px;}
+  .sum-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0 2px;margin-top:4px;border-top:1px solid rgba(255,255,255,0.12);font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .form-grid label{font-size:11px;color:var(--w50);font-weight:700;letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:5px;}
+  .form-grid .full{grid-column:1 / -1;}
+  .bill{font-variant-numeric:tabular-nums;}
+  .bill-sec{font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:var(--accent);margin:12px 0 4px;}
+  .bill-sec:first-child{margin-top:0;}
+  .bill-row{display:grid;grid-template-columns:1fr auto 74px;gap:8px;font-size:13px;color:var(--w80);padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);align-items:baseline;}
+  .bill-row .q{font-size:11px;color:var(--w50);text-align:right;white-space:nowrap;}
+  .bill-row .v{text-align:right;font-weight:700;color:var(--white);}
+  .bill-row.tot{border-bottom:none;border-top:1px solid rgba(255,255,255,0.15);font-weight:800;color:var(--white);}
+  .bill-row.tot .v{font-weight:800;}
+  .bill-row.grand{font-size:17px;font-weight:900;border-top:2px solid var(--red);border-bottom:none;padding-top:10px;margin-top:6px;color:var(--white);}
+  .bill-row.grand .v{font-weight:900;}
+  .meter{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px;}
+  .meter div{background:rgba(255,255,255,0.03);border:1px solid var(--cardBorder);border-radius:12px;padding:8px;text-align:center;}
+  .meter b{display:block;font-size:16px;font-variant-numeric:tabular-nums;}
+  .meter span{font-size:10px;color:var(--w50);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+  .list-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+  .list-item:last-child{border-bottom:none;}
+  .li-main{flex:1;min-width:0;}
+  .li-title{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .li-sub{font-size:12px;color:var(--w50);margin-top:3px;line-height:1.5;font-variant-numeric:tabular-nums;}
+  .yr-row{padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+  .yr-row:last-child{border-bottom:none;}
+  .yr-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:7px;}
+  .yr-year{font-size:17px;font-weight:800;}
+  .yr-tag{font-size:10px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--w50);margin-left:6px;}
+  .yr-val{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .yr-sub{font-size:12px;color:var(--w50);margin-top:6px;font-variant-numeric:tabular-nums;}
+  .bar-track{height:10px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#3352c4,#7aa2ff);transition:width 0.6s ease;}
+  .chart{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;align-items:end;height:110px;margin-top:4px;}
+  .chart .col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;}
+  .chart .bar{width:100%;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,var(--flame),#d9532b);min-height:2px;}
+  .chart .bar.none{background:rgba(255,255,255,0.06);}
+  .chart .lbl{font-size:9px;color:var(--w50);font-weight:700;}
+  .chart .val{font-size:9px;color:var(--w80);font-weight:700;font-variant-numeric:tabular-nums;}
+  .info-box{background:rgba(122, 162, 255, 0.06);border-radius:18px;padding:14px 16px;border:1px solid rgba(122, 162, 255, 0.18);margin-bottom:16px;}
+  .info-title{font-size:13px;color:var(--accent);font-weight:700;}
+  .info-text{font-size:13px;color:var(--w80);margin-top:6px;line-height:1.5;}
+  .sync-status{font-size:12px;color:var(--w50);text-align:center;margin-top:4px;font-weight:500;}
+  .btn{width:100%;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:var(--white);font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;}
+  .btn.primary{background:var(--accentGradient);border-color:transparent;}
+  .btn.danger{border-color:rgba(255,92,92,0.4);color:var(--neg);}
+  .btn.small{width:auto;padding:7px 11px;margin:0;font-size:13px;}
+  .empty{font-size:13px;color:var(--w50);padding:8px 0;}
+  .auth-btn:focus-visible,.tab-btn:focus-visible,.btn:focus-visible,.year-sel button:focus-visible,.m-amt:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .guide p,.guide li{font-size:14px;color:var(--w80);line-height:1.55;}
+  .guide ul{padding-left:18px;display:flex;flex-direction:column;gap:8px;}
+  .guide b{color:var(--white);}
+  .guide code{font-family:inherit;font-weight:700;color:var(--flame);font-variant-numeric:tabular-nums;}
+  .formula{margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(122,162,255,0.08);border:1px solid rgba(122,162,255,0.2);font-size:13px;font-weight:700;color:var(--accent);line-height:1.7;}
+  .ex-row{display:grid;grid-template-columns:1fr auto;gap:8px;font-size:13px;color:var(--w80);padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-variant-numeric:tabular-nums;}
+  .ex-row b{color:var(--white);}
+  .user-avatar{width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:6px;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-left-wrap">
+      <img class="app-logo" src="icon-192.png" alt=""/>
+      <div>
+        <div class="header-date" id="hdr-date"></div>
+        <h1>Plin</h1>
+      </div>
+    </div>
+    <button class="auth-btn" id="auth-btn" type="button" onclick="toggleAuth()">Prijava</button>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button type="button" class="tab-btn active" data-tab="potrosnja">🔥 Potrošnja</button>
+    <button type="button" class="tab-btn" data-tab="cijene">💶 Cijene</button>
+    <button type="button" class="tab-btn" data-tab="godine">📅 Godine</button>
+    <button type="button" class="tab-btn" data-tab="upute">📖 Upute</button>
+  </div>
+
+  <div class="content">
+    <!-- ===== TAB 1: POTROŠNJA ===== -->
+    <div class="tab-panel active" id="panel-potrosnja">
+      <div class="hero">
+        <div class="hero-top">
+          <div class="hero-label">🧾 Za platiti u godini</div>
+          <div class="year-sel">
+            <button type="button" onclick="changeYear(-1)" aria-label="Prethodna godina">‹</button>
+            <span id="y-label">2026</span>
+            <button type="button" onclick="changeYear(1)" aria-label="Sljedeća godina">›</button>
+          </div>
+        </div>
+        <div class="hero-amount" id="h-total">0,00 €</div>
+        <div class="hero-sub" id="h-sub">Upiši stanje plinomjera za mjesec</div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">Potrošnja</div><div class="stat-value" id="s-m3">—</div><div class="stat-sub" id="s-kwh"></div></div>
+        <div class="stat-card"><div class="stat-label">Prosjek / mj.</div><div class="stat-value" id="s-avg">—</div><div class="stat-sub" id="s-avg-m3"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>📟 Stanje plinomjera (m³)</span></div>
+        <div class="m-head"><span>#</span><span>Početno</span><span>Završno</span><span>Iznos</span></div>
+        <div id="month-list"></div>
+        <div class="sum-row"><span>Ukupno</span><span id="sum-total">0,00 €</span></div>
+      </div>
+
+      <div class="card" id="bill-card">
+        <div class="card-title"><span id="bill-title">🧾 Obračun</span><span class="mute" style="font-size:12px;font-weight:600" id="bill-period"></span></div>
+        <div id="bill"></div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-title">Kako radi</div>
+        <div class="info-text">Za svaki mjesec upiši <b>početno</b> i <b>završno</b> stanje plinomjera. Prazno početno stanje preuzima završno stanje prethodnog mjeseca. Dodirni iznos za obračun mjeseca. Detaljno u tabu <b>📖 Upute</b>.</div>
+      </div>
+
+      <div class="sync-status" id="sync-msg">Podaci se spremaju lokalno. Prijavi se za Cloud.</div>
+      <button class="btn" type="button" onclick="syncNow()">☁️ Sinkroniziraj sada</button>
+      <div class="sync-status" style="margin-top:8px">verzija 2026-10-13a · obračun po računu HEP Opskrba plinom</div>
+    </div>
+
+    <!-- ===== TAB 2: CIJENE ===== -->
+    <div class="tab-panel" id="panel-cijene">
+      <div class="card">
+        <div class="card-title"><span>💶 Cjenik</span><span class="mute" style="font-size:12px;font-weight:600" id="tar-count"></span></div>
+        <div id="tariff-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>✍️ Nove cijene</span></div>
+        <div class="info-text" style="margin:0 0 12px">Cijene vrijede od odabranog mjeseca nadalje, dok ih ne zamijeni noviji cjenik. Vrijednosti prepiši s računa (stranica 2).</div>
+        <div class="form-grid">
+          <div class="full"><label for="t-from">Vrijedi od mjeseca</label><input type="month" class="field left" id="t-from"/></div>
+          <div><label for="t-nab">Nabava plina €/kWh</label><input type="text" inputmode="decimal" class="field" id="t-nab"/></div>
+          <div><label for="t-ops">Opskrba plinom €/kWh</label><input type="text" inputmode="decimal" class="field" id="t-ops"/></div>
+          <div><label for="t-dis">Distribucija €/kWh</label><input type="text" inputmode="decimal" class="field" id="t-dis"/></div>
+          <div><label for="t-fix">Fiksna naknada €/mj.</label><input type="text" inputmode="decimal" class="field" id="t-fix"/></div>
+          <div><label for="t-sub">Subvencija RH €/kWh</label><input type="text" inputmode="decimal" class="field" id="t-sub"/></div>
+          <div><label for="t-pdv">PDV %</label><input type="text" inputmode="decimal" class="field" id="t-pdv"/></div>
+          <div><label for="t-gcv">Ogrjevna vrij. kWh/m³</label><input type="text" inputmode="decimal" class="field" id="t-gcv"/></div>
+          <div><label for="t-fak">Ukupni faktor</label><input type="text" inputmode="decimal" class="field" id="t-fak"/></div>
+        </div>
+        <button class="btn primary" type="button" onclick="saveTariff()">Spremi cjenik</button>
+        <div class="info-text" style="margin-top:10px">Ogrjevna vrijednost (GCV) i ukupni faktor nalaze se u tablici očitanja (stupci 4 i 5). Malo se mijenjaju iz mjeseca u mjesec – za točan iznos upiši kWh s računa u obračunu mjeseca.</div>
+      </div>
+    </div>
+
+    <!-- ===== TAB 3: GODINE ===== -->
+    <div class="tab-panel" id="panel-godine">
+      <div class="hero">
+        <div class="hero-label">💎 Plaćeno ukupno</div>
+        <div class="hero-amount" id="g-total">0,00 €</div>
+        <div class="hero-sub" id="g-sub">—</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>🔥 Potrošnja po mjesecima (m³)</span><span class="mute" style="font-size:12px;font-weight:600" id="chart-year"></span></div>
+        <div class="chart" id="chart"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>📅 Po godinama</span></div>
+        <div id="year-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>🗂️ Podaci</span></div>
+        <button class="btn" type="button" onclick="exportData()">Izvezi podatke (JSON)</button>
+        <button class="btn" type="button" onclick="document.getElementById('import-file').click()">Uvezi podatke (JSON)</button>
+        <input type="file" id="import-file" accept="application/json,.json" hidden onchange="importData(this)"/>
+        <button class="btn danger" type="button" onclick="resetData()">Obriši sve podatke</button>
+      </div>
+    </div>
+
+    <!-- ===== TAB 4: UPUTE ===== -->
+    <div class="tab-panel" id="panel-upute">
+      <div class="card guide">
+        <div class="card-title"><span>🧭 Ukratko</span></div>
+        <p>Svaki mjesec upišeš <b>početno</b> i <b>završno</b> stanje plinomjera (m³). App iz razlike izračuna potrošnju i iznos računa na isti način kao HEP Opskrba plinom.</p>
+        <div class="formula">
+          m³ = završno − početno<br/>
+          kWh = m³ × ukupni faktor × ogrjevna vrijednost (zaokruženo)<br/>
+          Opskrba = kWh × (nabava + opskrba)<br/>
+          Distribucija = kWh × distribucija + fiksna naknada<br/>
+          PDV = (opskrba + distribucija) × 5 %<br/>
+          Za platiti = osnovica + PDV − kWh × subvencija
+        </div>
+      </div>
+
+      <div class="card guide">
+        <div class="card-title"><span>📟 Upis stanja</span></div>
+        <ul>
+          <li>Stanje upisuj u cijelim m³, npr. <code>1941</code> (može i <code>1.941</code> – točka se tretira kao razdjelnik tisućica).</li>
+          <li>Ako početno stanje ostaviš prazno, uzima se <b>završno stanje prethodnog mjeseca</b> (vidi se kao siva vrijednost u polju). Siječanj preuzima prosinac prethodne godine.</li>
+          <li>Ako je završno manje od početnog, mjesec se označi crveno i ne obračunava se.</li>
+          <li>Dodirni <b>iznos</b> u retku da vidiš obračun mjeseca stavku po stavku, kao na računu.</li>
+        </ul>
+      </div>
+
+      <div class="card guide">
+        <div class="card-title"><span>🎯 Točnost</span></div>
+        <ul>
+          <li>HEP svaki mjesec koristi malo drugačiju ogrjevnu vrijednost i faktor korekcije, pa izračunati kWh može odstupati za 1–2 kWh (par centi).</li>
+          <li>Kad stigne račun, u obračunu mjeseca upiši <b>kWh s računa</b> (stupac 6) – iznos će se točno poklopiti.</li>
+          <li>Kad se promijene cijene, u tabu <b>💶 Cijene</b> dodaj novi cjenik s mjesecom od kojeg vrijedi. Stari mjeseci ostaju obračunati po starim cijenama.</li>
+        </ul>
+      </div>
+
+      <div class="card guide">
+        <div class="card-title"><span>🔢 Primjer – rujan 2026.</span></div>
+        <div class="ex-row"><span>1.941 − 1.927</span><b>14 m³</b></div>
+        <div class="ex-row"><span>14 × 0,956994 × 11,218416</span><b>150 kWh</b></div>
+        <div class="ex-row"><span>Opskrba 5,33 + 1,29</span><b>6,62 €</b></div>
+        <div class="ex-row"><span>Distribucija 0,87 + 1,73</span><b>2,60 €</b></div>
+        <div class="ex-row"><span>PDV 5 % na 9,22</span><b>0,46 €</b></div>
+        <div class="ex-row"><span>Subvencija RH 150 × 0,0033</span><b>−0,50 €</b></div>
+        <div class="ex-row"><span><b>Za platiti</b></span><b>9,18 €</b></div>
+      </div>
+
+      <div class="card guide">
+        <div class="card-title"><span>☁️ Prijava i podaci</span></div>
+        <ul>
+          <li><b>Prijava:</b> Google prijava sinkronizira podatke između uređaja. Bez prijave sve ostaje samo na ovom uređaju.</li>
+          <li><b>Izvoz (JSON):</b> napravi sigurnosnu kopiju prije brisanja ili većih promjena.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== FIREBASE (opcionalno) =====
+   Isti Firebase projekt kao Štednja i E-Smoker; podaci idu u zasebnu kolekciju "plin". */
+const SAME_ORIGIN_AUTH = /\.(web\.app|firebaseapp\.com)$/.test(location.hostname);
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAxQCJ_j-qE5kNukhUy7t7EWpQjnsEApbA",
+  authDomain: SAME_ORIGIN_AUTH ? location.hostname : "vape-kalkulator.firebaseapp.com",
+  projectId: "vape-kalkulator",
+  storageBucket: "vape-kalkulator.firebasestorage.app",
+  messagingSenderId: "334042935965",
+  appId: "1:334042935965:web:7b2f6478907f72c9dc9a74"
+};
+const COLLECTION = "plin";
+const STORAGE_KEY = "plin-data";
+const UID_KEY = "plin-uid";
+const REDIRECT_KEY = "plin-auth-pending";
+const REDIRECT_FAILED_KEY = "plin-redirect-failed";
+const MONTHS = ["","Siječanj","Veljača","Ožujak","Travanj","Svibanj","Lipanj","Srpanj","Kolovoz","Rujan","Listopad","Studeni","Prosinac"];
+const MONTHS_SHORT = ["","Sij","Velj","Ožu","Tra","Svi","Lip","Srp","Kol","Ruj","Lis","Stu","Pro"];
+
+/* Cjenik s računa za rujan 2026. (HEP Opskrba plinom, tarifni model TM02) */
+const DEFAULT_TARIFF = { from: "2026-01", nab: 0.0355, ops: 0.0086, dis: 0.0058, fix: 1.73, sub: 0.0033, pdv: 5, gcv: 11.218416, fak: 0.956994 };
+
+/* ===== STANJE =====
+   years:   { "2026": [ {s, e, k} × 12 ] }  – s = početno, e = završno stanje (m³), k = kWh s računa (neobavezno)
+   tariffs: [ { from:"YYYY-MM", nab, ops, dis, fix, sub, pdv, gcv, fak } ] */
+const thisYear = new Date().getFullYear();
+const defaults = () => ({ v: 1, years: {}, tariffs: [{ ...DEFAULT_TARIFF }] });
+let data = defaults(), viewYear = thisYear, selMonth = null, user = null, db = null, firebaseReady = false, saveTimer = null, unsubCloud = null;
+const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
+/* ===== TABOVI ===== */
+document.getElementById("tabs").addEventListener("click", e => {
+  const btn = e.target.closest(".tab-btn"); if (!btn) return;
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b === btn));
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + btn.dataset.tab));
+});
+
+/* ===== POMOĆNO ===== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+/* zaokruživanje na 2 decimale "kao na računu" (5,325 → 5,33, ne 5,32 zbog float greške) */
+const r2 = n => Math.round(+(n * 100).toFixed(6)) / 100;
+const nf = new Intl.NumberFormat("hr-HR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const nfInt = new Intl.NumberFormat("hr-HR", { maximumFractionDigits: 3 });
+const nfP = new Intl.NumberFormat("hr-HR", { maximumFractionDigits: 6 });
+const fmt = n => nf.format(r2(n)) + " €";
+const pad2 = n => String(n).padStart(2, "0");
+/* novčani / decimalni iznos: "1.234,56" / "1234,56" / "0.0355" */
+function parseNum(s) {
+  s = String(s ?? "").trim().replace(/\s|€|%/g, "");
+  if (!s) return null;
+  if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+  const n = parseFloat(s);
+  return isFinite(n) ? n : null;
+}
+/* stanje plinomjera: točka = tisućice (1.941 → 1941), zarez = decimale */
+function parseReading(s) {
+  s = String(s ?? "").trim().replace(/\s|m³|m3/gi, "");
+  if (!s) return null;
+  s = s.replace(/\./g, "").replace(",", ".");
+  const n = parseFloat(s);
+  return isFinite(n) && n >= 0 ? n : null;
+}
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const ssGet = k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
+const ssSet = (k, v) => { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} };
+const num = v => typeof v === "number" && isFinite(v) ? v : null;
+
+const yearArr = y => {
+  const a = Array.isArray(data.years[y]) ? data.years[y] : [];
+  return Array.from({ length: 12 }, (_, i) => {
+    const x = a[i] && typeof a[i] === "object" ? a[i] : {};
+    return { s: num(x.s), e: num(x.e), k: num(x.k) };
+  });
+};
+const entry = (y, m) => yearArr(y)[m - 1];
+
+/* Završno stanje zadnjeg upisanog mjeseca prije (y, m) – do 2 godine unatrag */
+function prevEnd(y, m) {
+  for (let i = 1; i <= 24; i++) {
+    let mm = m - i, yy = y;
+    while (mm < 1) { mm += 12; yy -= 1; }
+    const x = entry(yy, mm);
+    if (x.e != null) return x.e;
+    if (x.s != null) return null;   // mjesec ima početno bez završnog – ne nagađaj dalje
+  }
+  return null;
+}
+
+/* Cjenik koji vrijedi za mjesec: zadnji s from <= mjesec; za starije mjesece najstariji */
+function tariffFor(y, m) {
+  const key = `${y}-${pad2(m)}`;
+  const list = [...data.tariffs].sort((a, b) => a.from.localeCompare(b.from));
+  let t = list[0];
+  for (const x of list) if (x.from <= key) t = x;
+  return t || DEFAULT_TARIFF;
+}
+
+/* ===== OBRAČUN (po računu HEP Opskrba plinom) ===== */
+function calcMonth(y, m) {
+  const x = entry(y, m);
+  const startAuto = x.s == null ? prevEnd(y, m) : null;
+  const start = x.s != null ? x.s : startAuto;
+  const end = x.e;
+  const res = { m, start, startAuto, end, k: x.k, hasInput: x.s != null || x.e != null, ok: false, err: "" };
+  if (end == null || start == null) return res;
+  if (end < start) { res.err = "završno < početno"; return res; }
+  const t = tariffFor(y, m);
+  const m3 = Math.round((end - start) * 1000) / 1000;
+  const kwhCalc = Math.round(m3 * t.fak * t.gcv);
+  const kwh = x.k != null ? x.k : kwhCalc;
+  const nabava = r2(kwh * t.nab), opskrbaPl = r2(kwh * t.ops);
+  const opskrba = r2(nabava + opskrbaPl);
+  const distrVar = r2(kwh * t.dis), fiksna = r2(t.fix);
+  const distribucija = r2(distrVar + fiksna);
+  const osnovica = r2(opskrba + distribucija);
+  const pdv = r2(osnovica * t.pdv / 100);
+  const sPdv = r2(osnovica + pdv);
+  const subvencija = r2(kwh * t.sub);
+  const total = r2(sPdv - subvencija);
+  return Object.assign(res, { ok: true, t, m3, kwh, kwhCalc, kwhManual: x.k != null, nabava, opskrbaPl, opskrba, distrVar, fiksna, distribucija, osnovica, pdv, sPdv, subvencija, total });
+}
+function calcYear(y) {
+  const months = Array.from({ length: 12 }, (_, i) => calcMonth(y, i + 1));
+  const ok = months.filter(r => r.ok);
+  return {
+    months, count: ok.length,
+    total: r2(ok.reduce((s, r) => s + r.total, 0)),
+    m3: Math.round(ok.reduce((s, r) => s + r.m3, 0) * 1000) / 1000,
+    kwh: ok.reduce((s, r) => s + r.kwh, 0),
+    last: ok.length ? ok[ok.length - 1] : null
+  };
+}
+
+/* ===== SPREMANJE ===== */
+function saveData() {
+  data.updatedAt = Date.now();
+  lsSet(STORAGE_KEY, JSON.stringify(data));
+  renderSummary(); renderTariffs(); renderYears();
+  pushToCloud();
+}
+function pushToCloud() {
+  if (!(user && db)) return;
+  clearTimeout(saveTimer);
+  setSync("☁️ Spremam…");
+  saveTimer = setTimeout(() => db.collection(COLLECTION).doc(user.uid).set(JSON.parse(JSON.stringify(data)))
+    .then(() => setSync("☁️ Sinkronizirano · " + new Date().toLocaleTimeString("hr-HR", { hour: "2-digit", minute: "2-digit" })))
+    .catch(err => setSync("Greška pri spremanju: " + err.message)), 600);
+}
+function normalize(d) {
+  const n = { ...defaults(), ...d };
+  if (!n.years || typeof n.years !== "object" || Array.isArray(n.years)) n.years = {};
+  if (!Array.isArray(n.tariffs) || !n.tariffs.length) n.tariffs = [{ ...DEFAULT_TARIFF }];
+  n.tariffs = n.tariffs.filter(t => t && /^\d{4}-\d{2}$/.test(t.from))
+    .map(t => { const o = { from: t.from }; for (const k of ["nab","ops","dis","fix","sub","pdv","gcv","fak"]) o[k] = num(Number(t[k])) ?? DEFAULT_TARIFF[k]; return o; });
+  if (!n.tariffs.length) n.tariffs = [{ ...DEFAULT_TARIFF }];
+  return n;
+}
+function applyRemote(remote) {
+  const merged = normalize(remote);
+  if (JSON.stringify(merged) === JSON.stringify(data)) return;
+  if ((merged.updatedAt || 0) < (data.updatedAt || 0)) { pushToCloud(); return; }
+  adoptCloud(merged);
+}
+function adoptCloud(remote) {
+  data = normalize(remote);
+  lsSet(STORAGE_KEY, JSON.stringify(data));
+  const ae = document.activeElement;
+  if (ae && ae.tagName === "INPUT" && (ae.closest("#month-list") || ae.closest("#bill"))) {
+    renderSummary(); ae.addEventListener("blur", render, { once: true });
+  } else render();
+  setSync("☁️ Ažurirano s drugog uređaja");
+}
+function loadLocal() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) data = normalize(JSON.parse(raw)); }
+  catch (e) { data = defaults(); }
+}
+const setSync = msg => { $("sync-msg").textContent = msg; };
+
+/* ===== TAB 1: POTROŠNJA ===== */
+function changeYear(d) {
+  viewYear += d; selMonth = null;
+  renderMonths();
+}
+function setReading(m, field, el) {
+  const y = viewYear, arr = yearArr(y);
+  const v = parseReading(el.value);
+  arr[m - 1][field] = v;
+  el.value = v == null ? "" : nfInt.format(v);
+  storeYear(y, arr);
+  if (field === "e" && v != null) selMonth = m;
+  saveData();
+}
+function setKwh(m, el) {
+  const y = viewYear, arr = yearArr(y);
+  const v = parseReading(el.value);
+  arr[m - 1].k = v;
+  storeYear(y, arr);
+  saveData();
+}
+function storeYear(y, arr) {
+  if (arr.some(x => x.s != null || x.e != null || x.k != null)) data.years[y] = arr; else delete data.years[y];
+}
+function selectMonth(m) {
+  selMonth = m;
+  renderSummary();
+  $("bill-card").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function renderMonths() {
+  const y = viewYear, c = calcYear(y);
+  $("month-list").innerHTML = c.months.map(r => `
+    <div class="m-wrap" id="mw-${r.m}">
+      <div class="m-row">
+        <div class="m-num" title="${MONTHS[r.m]}">${r.m}<span class="m-short">${MONTHS_SHORT[r.m]}</span></div>
+        <div><input class="field sm" type="text" inputmode="decimal" id="ms-${r.m}" value="${entry(y, r.m).s != null ? nfInt.format(entry(y, r.m).s) : ""}"
+             aria-label="Početno stanje – ${MONTHS[r.m]}" onchange="setReading(${r.m}, 's', this)" onfocus="this.select()"/></div>
+        <div><input class="field sm" type="text" inputmode="decimal" placeholder="—" value="${r.end != null ? nfInt.format(r.end) : ""}"
+             aria-label="Završno stanje – ${MONTHS[r.m]}" onchange="setReading(${r.m}, 'e', this)" onfocus="this.select()"/></div>
+        <div><button type="button" class="m-amt" id="ma-${r.m}" onclick="selectMonth(${r.m})"></button></div>
+      </div>
+      <div class="m-info" id="mi-${r.m}"></div>
+    </div>`).join("");
+  renderSummary();
+}
+/* osvježi brojke bez diranja inputa (da ne smeta tipkanju) */
+function renderSummary() {
+  const y = viewYear, c = calcYear(y);
+  $("y-label").textContent = y;
+  c.months.forEach(r => {
+    const a = $("ma-" + r.m), info = $("mi-" + r.m), s = $("ms-" + r.m), w = $("mw-" + r.m); if (!a) return;
+    if (s) s.placeholder = r.startAuto != null ? nfInt.format(r.startAuto) : "—";
+    a.textContent = r.ok ? fmt(r.total) : "—";
+    a.className = "m-amt" + (r.ok ? "" : " mute");
+    a.disabled = !r.ok;
+    info.innerHTML = r.err ? `<span class="err">⚠ ${r.err}</span>`
+      : r.ok ? `${nfInt.format(r.m3)} m³ · <span class="k">${nfInt.format(r.kwh)} kWh</span>${r.kwhManual ? " (s računa)" : ""}`
+      : r.hasInput && r.start == null ? "upiši početno stanje" : "";
+    w.classList.toggle("has", r.ok);
+    w.classList.toggle("sel", r.ok && selMonth === r.m);
+  });
+  $("h-total").textContent = fmt(c.total);
+  $("sum-total").textContent = fmt(c.total);
+  $("h-sub").textContent = c.count
+    ? `${c.count} ${c.count === 1 ? "mjesec" : c.count < 5 ? "mjeseca" : "mjeseci"} · zadnji ${MONTHS[c.last.m].toLowerCase()} ${fmt(c.last.total)}`
+    : "Upiši stanje plinomjera za mjesec";
+  $("s-m3").textContent = c.count ? nfInt.format(c.m3) + " m³" : "—";
+  $("s-kwh").textContent = c.count ? nfInt.format(c.kwh) + " kWh" : "";
+  $("s-avg").textContent = c.count ? fmt(c.total / c.count) : "—";
+  $("s-avg-m3").textContent = c.count ? nfInt.format(Math.round(c.m3 / c.count * 10) / 10) + " m³" : "";
+  renderBill(c);
+}
+function renderBill(c) {
+  if (!(selMonth && c.months[selMonth - 1].ok)) selMonth = c.last ? c.last.m : null;
+  c.months.forEach(r => { const w = $("mw-" + r.m); if (w) w.classList.toggle("sel", r.ok && selMonth === r.m); });
+  const y = viewYear;
+  if (!selMonth) {
+    $("bill-title").textContent = "🧾 Obračun";
+    $("bill-period").textContent = "";
+    $("bill").innerHTML = '<div class="empty">Upiši početno i završno stanje za barem jedan mjesec.</div>';
+    return;
+  }
+  const r = c.months[selMonth - 1], t = r.t;
+  const last = new Date(y, selMonth, 0).getDate();
+  $("bill-title").textContent = `🧾 ${MONTHS[selMonth]} ${y}.`;
+  $("bill-period").textContent = `1.${selMonth}. – ${last}.${selMonth}.`;
+  const p = n => nfP.format(n);
+  const row = (name, q, v, cls = "") => `<div class="bill-row ${cls}"><span>${name}</span><span class="q">${q}</span><span class="v">${v}</span></div>`;
+  $("bill").innerHTML = `
+    <div class="meter">
+      <div><span>Početno</span><b>${nfInt.format(r.start)}</b></div>
+      <div><span>Završno</span><b>${nfInt.format(r.end)}</b></div>
+      <div><span>Obujam</span><b>${nfInt.format(r.m3)} m³</b></div>
+    </div>
+    <div class="bill-sec">Energija</div>
+    ${row("Isporučena energija", `${nfInt.format(r.m3)} × ${p(t.fak)} × ${p(t.gcv)}`, `${nfInt.format(r.kwhCalc)} kWh`)}
+    <div class="form-grid" style="margin:8px 0 0">
+      <div><label for="kwh-in">kWh s računa (neobavezno)</label>
+      <input class="field sm" id="kwh-in" type="text" inputmode="numeric" placeholder="${nfInt.format(r.kwhCalc)}" value="${r.k != null ? nfInt.format(r.k) : ""}" onchange="setKwh(${selMonth}, this)" onfocus="this.select()"/></div>
+      <div class="info-text" style="align-self:end;margin:0 0 6px;font-size:12px">${r.kwhManual ? "Obračun koristi kWh s računa." : "Upiši kad stigne račun za točan iznos."}</div>
+    </div>
+    <div class="bill-sec">Obračun opskrbe</div>
+    ${row("Trošak nabave plina", `${p(t.nab)} × ${nfInt.format(r.kwh)}`, nf.format(r.nabava))}
+    ${row("Trošak opskrbe plinom", `${p(t.ops)} × ${nfInt.format(r.kwh)}`, nf.format(r.opskrbaPl))}
+    ${row("Ukupno opskrba", "", nf.format(r.opskrba), "tot")}
+    <div class="bill-sec">Obračun distribucije</div>
+    ${row("Trošak distribucije plina", `${p(t.dis)} × ${nfInt.format(r.kwh)}`, nf.format(r.distrVar))}
+    ${row("Fiksna mjesečna naknada", "", nf.format(r.fiksna))}
+    ${row("Ukupno distribucija", "", nf.format(r.distribucija), "tot")}
+    <div class="bill-sec">Ukupno</div>
+    ${row(`PDV ${nfInt.format(t.pdv)} %`, `osnovica ${nf.format(r.osnovica)}`, nf.format(r.pdv))}
+    ${row("Iznos računa s PDV-om", "", nf.format(r.sPdv))}
+    ${row("Subvencija RH", `${p(t.sub)} × ${nfInt.format(r.kwh)}`, `<span class="pos">−${nf.format(r.subvencija)}</span>`)}
+    ${row("Za platiti", "", fmt(r.total), "grand")}
+    <div class="info-text" style="font-size:12px;margin-top:10px">Cjenik od ${t.from.slice(5)}/${t.from.slice(0, 4)} · jedinični trošak bez PDV-a ${r.kwh ? p(Math.floor(r.osnovica / r.kwh * 1e6) / 1e6) : "—"} €/kWh</div>`;
+}
+
+/* ===== TAB 2: CIJENE ===== */
+const TFIELDS = [["nab","t-nab"],["ops","t-ops"],["dis","t-dis"],["fix","t-fix"],["sub","t-sub"],["pdv","t-pdv"],["gcv","t-gcv"],["fak","t-fak"]];
+function fillTariffForm(t) {
+  for (const [k, id] of TFIELDS) $(id).value = nfP.format(t[k]);
+}
+function saveTariff() {
+  const from = $("t-from").value;
+  if (!/^\d{4}-\d{2}$/.test(from)) { $("t-from").focus(); return; }
+  const t = { from };
+  for (const [k, id] of TFIELDS) {
+    const v = parseNum($(id).value);
+    if (v == null || v < 0) { $(id).focus(); return; }
+    t[k] = v;
+  }
+  const i = data.tariffs.findIndex(x => x.from === from);
+  if (i >= 0) { if (!confirm(`Cjenik od ${from.slice(5)}/${from.slice(0, 4)} već postoji. Zamijeniti ga?`)) return; data.tariffs[i] = t; }
+  else data.tariffs.push(t);
+  data.tariffs.sort((a, b) => a.from.localeCompare(b.from));
+  saveData();
+}
+function removeTariff(from) {
+  if (data.tariffs.length <= 1) { alert("Mora ostati barem jedan cjenik."); return; }
+  if (!confirm(`Obrisati cjenik od ${from.slice(5)}/${from.slice(0, 4)}?`)) return;
+  data.tariffs = data.tariffs.filter(x => x.from !== from);
+  saveData();
+}
+function renderTariffs() {
+  const list = [...data.tariffs].sort((a, b) => b.from.localeCompare(a.from));
+  const p = n => nfP.format(n);
+  $("tar-count").textContent = list.length + (list.length === 1 ? " cjenik" : " cjenika");
+  $("tariff-list").innerHTML = list.map((t, i) => `
+    <div class="list-item">
+      <div class="li-main">
+        <div class="li-title">od ${t.from.slice(5)}/${t.from.slice(0, 4)}${i === 0 ? ' <span class="mute" style="font-size:11px">· AKTUALNI</span>' : ""}</div>
+        <div class="li-sub">Nabava ${p(t.nab)} · Opskrba ${p(t.ops)} · Distribucija ${p(t.dis)} €/kWh<br/>
+        Fiksna ${nf.format(t.fix)} € · Subvencija ${p(t.sub)} €/kWh · PDV ${p(t.pdv)} %<br/>
+        GCV ${p(t.gcv)} kWh/m³ · faktor ${p(t.fak)}</div>
+      </div>
+      <button class="btn small" type="button" onclick="editTariff('${t.from}')" title="Kopiraj u obrazac">✎</button>
+      <button class="btn small" type="button" onclick="removeTariff('${t.from}')" title="Obriši">✕</button>
+    </div>`).join("");
+}
+function editTariff(from) {
+  const t = data.tariffs.find(x => x.from === from); if (!t) return;
+  fillTariffForm(t); $("t-from").value = t.from;
+  $("t-from").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/* ===== TAB 3: GODINE ===== */
+function renderYears() {
+  const ys = Object.keys(data.years).map(Number).filter(Boolean).sort((a, b) => b - a);
+  const rows = ys.map(y => ({ y, ...calcYear(y) })).filter(r => r.count);
+  const total = rows.reduce((s, r) => s + r.total, 0);
+  const max = Math.max(...rows.map(r => r.total), 0.01);
+  $("g-total").textContent = fmt(total);
+  $("g-sub").textContent = rows.length
+    ? `${rows.length} ${rows.length === 1 ? "godina" : rows.length < 5 ? "godine" : "godina"} · ${nfInt.format(Math.round(rows.reduce((s, r) => s + r.m3, 0)))} m³`
+    : "Još nema podataka";
+  $("year-list").innerHTML = rows.length ? rows.map(r => `
+    <div class="yr-row">
+      <div class="yr-top">
+        <div><span class="yr-year">${r.y}.</span><span class="yr-tag">${r.count < 12 ? r.count + " mj." : "cijela godina"}</span></div>
+        <span class="yr-val">${fmt(r.total)}</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${r.total / max * 100}%"></div></div>
+      <div class="yr-sub">${nfInt.format(r.m3)} m³ · ${nfInt.format(r.kwh)} kWh · prosjek ${fmt(r.total / r.count)} / mj.</div>
+    </div>`).join("") : '<div class="empty">Upiši stanja plinomjera u tabu Potrošnja.</div>';
+  // graf potrošnje za prikazanu godinu
+  const c = calcYear(viewYear);
+  const mx = Math.max(...c.months.map(r => r.ok ? r.m3 : 0), 1);
+  $("chart-year").textContent = viewYear + ".";
+  $("chart").innerHTML = c.months.map(r => `
+    <div class="col">
+      <span class="val">${r.ok ? nfInt.format(Math.round(r.m3)) : ""}</span>
+      <div class="bar${r.ok ? "" : " none"}" style="height:${r.ok ? Math.max(r.m3 / mx * 80, 3) : 3}px"></div>
+      <span class="lbl">${r.m}</span>
+    </div>`).join("");
+}
+
+function render() { renderMonths(); renderTariffs(); renderYears(); }
+
+/* ===== PRIJAVA ===== */
+const FB_VER = "10.12.2";
+const FB_CDNS = ["https://www.gstatic.com/firebasejs/" + FB_VER + "/", "https://cdn.jsdelivr.net/npm/firebase@" + FB_VER + "/"];
+let firebaseError = "", firebaseInitRunning = null;
+const sdkReady = () => typeof firebase !== "undefined" && !!firebase.initializeApp && !!firebase.auth && !!firebase.firestore;
+const loadScript = src => new Promise((res, rej) => {
+  const el = document.createElement("script");
+  const t = setTimeout(() => rej(new Error("isteklo vrijeme za " + src)), 15000);
+  el.src = src;
+  el.onload = () => { clearTimeout(t); res(); };
+  el.onerror = () => { clearTimeout(t); rej(new Error("ne mogu učitati " + src)); };
+  document.head.appendChild(el);
+});
+async function ensureFirebaseSdk() {
+  if (sdkReady()) return;
+  let lastErr = null;
+  for (const base of FB_CDNS) {
+    try {
+      for (const lib of ["app", "auth", "firestore"]) await loadScript(base + "firebase-" + lib + "-compat.js");
+      if (sdkReady()) return;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error("Firebase biblioteka se nije učitala");
+}
+function envProblem() {
+  const inFrame = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+  if (!/^https?:$/.test(location.protocol))
+    return "Prijava ne radi ovdje: app je otvoren kao \"" + location.protocol + "\" (pregled datoteke, upravitelj datoteka ili chat). Otvori app preko https adrese na hostingu.";
+  try {
+    const k = "__plin_test";
+    localStorage.setItem(k, "1"); localStorage.removeItem(k);
+    sessionStorage.setItem(k, "1"); sessionStorage.removeItem(k);
+  } catch (e) {
+    return inFrame
+      ? "Prijava ne radi ovdje: app je otvoren unutar okvira (pregled) koji blokira spremanje podataka. Otvori app izravno u pregledniku preko https adrese."
+      : "Preglednik blokira spremanje podataka za ovu stranicu (npr. uključeno \"Blokiraj sve kolačiće\"). Dozvoli kolačiće/podatke web-mjesta za ovu adresu pa osvježi app.";
+  }
+  return "";
+}
+function initFirebase() {
+  if (firebaseReady) return Promise.resolve();
+  if (!firebaseInitRunning) firebaseInitRunning = initFirebaseInner().finally(() => { firebaseInitRunning = null; });
+  return firebaseInitRunning;
+}
+async function initFirebaseInner() {
+  if (!FIREBASE_CONFIG.apiKey) { firebaseError = "Cloud nije konfiguriran – upiši FIREBASE_CONFIG u index.html."; return; }
+  const env = envProblem();
+  if (env) { firebaseError = env; setSync(env); return; }
+  try { await ensureFirebaseSdk(); }
+  catch (e) {
+    firebaseError = "Firebase biblioteka se nije učitala (" + e.message + "). Provjeri internet, blokator reklama / privatni DNS ili service worker (sw.js).";
+    setSync(firebaseError); return;
+  }
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore(); firebaseReady = true;
+    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
+    const redirectPending = ssGet(REDIRECT_KEY); ssSet(REDIRECT_KEY, null);
+    firebase.auth().getRedirectResult()
+      .then(res => {
+        if (redirectPending && !(res && res.user) && !firebase.auth().currentUser) {
+          lsSet(REDIRECT_FAILED_KEY, "1");
+          setSync("Google prijava se vratila bez korisnika (preglednik blokira kolačiće treće strane). Pritisni Prijava ponovno – sad ide preko popup prozora.");
+        }
+      })
+      .catch(err => setSync("Prijava nije uspjela (" + (err.code || "?") + "): " + err.message));
+    firebase.auth().onAuthStateChanged(u => {
+      user = u;
+      const btn = $("auth-btn");
+      if (unsubCloud) { unsubCloud(); unsubCloud = null; }
+      if (u) {
+        btn.innerHTML = (u.photoURL ? `<img class="user-avatar" src="${esc(u.photoURL)}" alt=""/>` : "") + "Odjava";
+        setSync("☁️ Povezujem…");
+        const ref = db.collection(COLLECTION).doc(u.uid);
+        const firstLoginHere = lsGet(UID_KEY) !== u.uid;
+        ref.get({ source: firstLoginHere ? "server" : "default" }).then(snap => {
+          if (!snap.exists) { data.updatedAt = data.updatedAt || Date.now(); pushToCloud(); }
+          else if (firstLoginHere) {
+            const remote = normalize(snap.data());
+            const localTouched = !!data.updatedAt && JSON.stringify(remote) !== JSON.stringify(data);
+            const keepLocal = localTouched && !confirm(
+              "U cloudu postoje spremljeni podaci za ovaj račun.\n\n" +
+              "U redu = učitaj podatke iz clouda (preporučeno)\n" +
+              "Odustani = zadrži podatke s ovog uređaja i PREPIŠI cloud");
+            if (keepLocal) { data.updatedAt = Date.now(); pushToCloud(); }
+            else { adoptCloud(remote); setSync("☁️ Podaci učitani iz clouda"); }
+          }
+          lsSet(UID_KEY, u.uid);
+          unsubCloud = ref.onSnapshot({ includeMetadataChanges: true }, s => {
+            if (s.metadata.hasPendingWrites) return;
+            if (s.exists) applyRemote(s.data());
+            if (s.metadata.fromCache) setSync("☁️ Lokalna kopija · čekam vezu…");
+            else setSync("☁️ Sinkronizirano · " + new Date().toLocaleTimeString("hr-HR", { hour: "2-digit", minute: "2-digit" }));
+          }, err => setSync("Greška sinkronizacije: " + err.message));
+        }).catch(err => setSync("Greška pri učitavanju: " + err.message + " – otvori app ponovno kad budeš online."));
+      } else { btn.textContent = "Prijava"; setSync("Podaci se spremaju lokalno. Prijavi se za sinkronizaciju."); }
+    });
+    window.addEventListener("online", () => { if (user) pushToCloud(); });
+  } catch (e) { firebaseError = "Cloud nedostupan: " + e.message; setSync(firebaseError); }
+}
+function toggleAuth() {
+  if (!firebaseReady) {
+    setSync("Učitavam Firebase…");
+    initFirebase().then(() => {
+      if (firebaseReady) setSync("Firebase učitan – pritisni Prijava još jednom.");
+      else setSync(firebaseError || "Firebase nije dostupan.");
+    });
+    return;
+  }
+  if (user) { if (confirm("Odjaviti se? Podaci ostaju spremljeni u cloudu.")) firebase.auth().signOut(); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  const fail = err => setSync(err.code === "auth/operation-not-supported-in-this-environment"
+    ? (envProblem() || "Prijava ne radi u ovom okruženju (" + location.origin + "). Otvori app izravno u pregledniku preko https adrese.")
+    : "Prijava nije uspjela (" + (err.code || "?") + "): " + err.message);
+  const viaRedirect = () => {
+    ssSet(REDIRECT_KEY, "1");
+    firebase.auth().signInWithRedirect(provider).catch(err => { ssSet(REDIRECT_KEY, null); fail(err); });
+  };
+  if (isStandalone() && SAME_ORIGIN_AUTH && !lsGet(REDIRECT_FAILED_KEY)) { viaRedirect(); return; }
+  setSync("Otvaram Google prijavu…");
+  firebase.auth().signInWithPopup(provider).catch(err => {
+    const popupProblem = ["auth/popup-blocked", "auth/operation-not-supported-in-this-environment", "auth/cancelled-popup-request", "auth/popup-closed-by-user"].includes(err.code);
+    if (popupProblem && !lsGet(REDIRECT_FAILED_KEY)) viaRedirect();
+    else if (popupProblem) setSync("Popup prijava nije dovršena (" + err.code + "). Dozvoli skočne prozore za ovu stranicu ili otvori app u pregledniku i prijavi se tamo.");
+    else fail(err);
+  });
+}
+
+/* ===== ALATI ===== */
+function exportData() {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+  a.download = "plin-podaci.json"; a.click();
+}
+function resetData() {
+  const msg = user ? "Obrisati sve podatke?\n\nPrijavljen si – podaci će se obrisati i u CLOUDU i na svim uređajima. Preporuka: prvo Izvezi podatke (JSON)."
+                   : "Obrisati sve podatke na ovom uređaju?";
+  if (!confirm(msg)) return;
+  data = defaults(); viewYear = thisYear; selMonth = null; try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} render(); saveData();
+}
+function importData(input) {
+  const file = input.files && input.files[0]; input.value = "";
+  if (!file) return;
+  file.text().then(txt => {
+    const parsed = JSON.parse(txt);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("neispravan format");
+    if (!confirm("Zamijeniti trenutne podatke podacima iz datoteke?" + (user ? " (spremit će se i u cloud)" : ""))) return;
+    data = normalize(parsed);
+    render(); saveData();
+    setSync("✅ Podaci uvezeni iz datoteke" + (user ? " – spremam u cloud…" : ""));
+  }).catch(err => setSync("Uvoz nije uspio: " + err.message));
+}
+function syncNow() {
+  if (!user) { toggleAuth(); return; }
+  pushToCloud();
+}
+
+/* ===== START ===== */
+$("hdr-date").textContent = new Date().toLocaleDateString("hr-HR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+loadLocal(); viewYear = thisYear;
+{ const now = new Date(), latest = [...data.tariffs].sort((a, b) => b.from.localeCompare(a.from))[0];
+  fillTariffForm(latest); $("t-from").value = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`; }
+render(); initFirebase();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
